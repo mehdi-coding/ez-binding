@@ -82,7 +82,7 @@ window.onload = () => {
         if (binder.element.nodeName == "INPUT") {
             // Init the variable if doesn't exist ...
             if (!ezModel[binder.variables[0]]) {
-                ezModel[binder.variables[0]] = '';
+                ezModel[binder.variables[0]] = binder.element.value;
             }
             // Update the value of the element
             binder.element.value = ezModel[binder.variables[0]]

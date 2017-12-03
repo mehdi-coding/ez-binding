@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
-    <script src="bind.js"></script>
+    <script src="../bind.js"></script>
 </head>
 <body>
     <label for="first">First Name:</label>
-    <input type="text" ez-Model="first" id="first"><br /><br />
+    <input type="text" ez-Model="first" id="first" value="Ez"><br /><br />
     <label for="last">Last Name:</label>
-    <input type="text" ez-Model="last" id="last"><br /><br />
+    <input type="text" ez-Model="last" id="last" value="Model"><br /><br />
     
     <p ez-Model>
         My First name is: <b>{{ first }}</b>,
@@ -19,6 +19,8 @@
     </p>
     
     <p ez-Model><b>Message: </b>{{message}}</p>
+
+    <p ez-Model><b>The Time is: </b>{{time}}</p>
 
     <script src="input.js"></script>
 </body>
