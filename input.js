@@ -1,15 +1,3 @@
-var x;
-
-(function () {
-    x = document.querySelectorAll('input');
-    x[0].addEventListener('input', function (evt) {
-        x[0].value = x[0].value.toUpperCase();
-    });
-})();
-
-let customer = {
-    first: "Ez",
-    last: "Model"
-}
-
-ezModel = customer
+ezModel.first = "Ez";
+ezModel.last = "Model";
+ezModel.message = "This is a message using EZ-Binding from the script ... :)"

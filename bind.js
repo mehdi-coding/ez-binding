@@ -1,7 +1,6 @@
 let identifiers = ['{{', '}}']
 let ezModel = {};
 let binders = {};
-ezModel.aze = "Great"; ezModel.another = "Finally";
  
 function getAllBindings() {
 
