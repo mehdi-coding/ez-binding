@@ -1,16 +1,14 @@
 let identifiers = ['{{', '}}']
 let ezModel = {};
-
-
+let binders = [];
 
 window.onload = () => {
-    let binders = [];
-    
+
     let linker = {
         set: function (obj, vari, value) {
 
             if (value == obj[vari]) return false
-    
+
             obj[vari] = value;
             let bin = [];
             binders.forEach(binder => {
@@ -36,12 +34,10 @@ window.onload = () => {
     function getAllBindings() {
 
         let modElemts = Array.from(document.querySelectorAll('[ez-Model]'))
-
         let bindings = [];
 
         modElemts.forEach((modElem) => {
             let childs = modElem.childNodes;
-
             if (Array.from(childs).length == 0) {
                 let binder = {
                     element: modElem,
@@ -51,27 +47,35 @@ window.onload = () => {
                 bindings.push(binder);
 
             } else {
-                childs.forEach(c => {
-                    let vars = []
-                    if (vars = getVariables(c)) {
-                        let staticTxt = []
-                        staticTxt[0] = c.textContent;
-
-                        vars.forEach(v => {
-                            let tbspit = staticTxt[staticTxt.length - 1];
-                            staticTxt.splice(-1, 1);
-                            staticTxt = staticTxt.concat(tbspit.split(identifiers[0] + v + identifiers[1]))
-                        })
-
-                        let binder = {
-                            element: c,
-                            variables: vars.map(vr => vr.trim()),
-                            content: staticTxt
-                        }
-                        bindings.push(binder);
+                if (modElem.nodeName == "SELECT") {
+                    let binder = {
+                        element: modElem,
+                        variables: [modElem.getAttribute('ez-Model')],
+                        content: []
                     }
-                })
+                    bindings.push(binder);
+                } else {
+                    childs.forEach(c => {
+                        let vars = []
+                        if (vars = getVariables(c)) {
+                            let staticTxt = []
+                            staticTxt[0] = c.textContent;
 
+                            vars.forEach(v => {
+                                let tbspit = staticTxt[staticTxt.length - 1];
+                                staticTxt.splice(-1, 1);
+                                staticTxt = staticTxt.concat(tbspit.split(identifiers[0] + v + identifiers[1]))
+                            })
+
+                            let binder = {
+                                element: c,
+                                variables: vars.map(vr => vr.trim()),
+                                content: staticTxt
+                            }
+                            bindings.push(binder);
+                        }
+                    })
+                }
             }
         })
 
@@ -79,7 +83,7 @@ window.onload = () => {
     }
 
     function updateBindings(binder) {
-        if (binder.element.nodeName == "INPUT") {
+        if (binder.element.nodeName == "INPUT" || binder.element.nodeName == "SELECT") {
             // Init the variable if doesn't exist ...
             if (ezModel[binder.variables[0]] == null) {
                 ezModel[binder.variables[0]] = binder.element.value;
@@ -88,15 +92,21 @@ window.onload = () => {
             binder.element.value = ezModel[binder.variables[0]]
         }
         else {
-            let txt = '';
+            let txt = '', b = '';
             // Reconstruct the textContent from original
             binder.variables.forEach((v, i) => {
                 if (ezModel[v] == null) {
                     ezModel[v] = '';
                 }
-                txt += binder.content[i] + ezModel[v]
+                b = binder.content[i];
+                if (b == null || b == undefined) b = '';
+
+                txt += b + ezModel[v]
             })
-            txt += binder.content[binder.content.length - 1];
+            b = binder.content[binder.content.length - 1];
+            if (b == null || b == undefined) b = '';
+
+            txt += b;
             // Update the textContent
             binder.element.textContent = txt;
         }
@@ -106,6 +116,10 @@ window.onload = () => {
     function initEvents(binder) {
         if (binder.element.nodeName == "INPUT") {
             binder.element.addEventListener('input', function (evt) {
+                ezModel[binder.variables[0]] = evt.target.value;
+            });
+        } else if (binder.element.nodeName == "SELECT") {
+            binder.element.addEventListener('change', function (evt) {
                 ezModel[binder.variables[0]] = evt.target.value;
             });
         }
