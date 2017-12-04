@@ -2,16 +2,16 @@ let identifiers = ['{{', '}}']
 let ezModel = {};
 
 
+
 window.onload = () => {
-    let binders = {};
+    let binders = [];
     
     let linker = {
         set: function (obj, vari, value) {
-            // Validate
 
             if (value == obj[vari]) return false
+    
             obj[vari] = value;
-
             let bin = [];
             binders.forEach(binder => {
                 if (binder.variables.indexOf(vari) > -1) bin.push(binder)
@@ -81,7 +81,7 @@ window.onload = () => {
     function updateBindings(binder) {
         if (binder.element.nodeName == "INPUT") {
             // Init the variable if doesn't exist ...
-            if (!ezModel[binder.variables[0]]) {
+            if (ezModel[binder.variables[0]] == null) {
                 ezModel[binder.variables[0]] = binder.element.value;
             }
             // Update the value of the element
@@ -91,7 +91,7 @@ window.onload = () => {
             let txt = '';
             // Reconstruct the textContent from original
             binder.variables.forEach((v, i) => {
-                if (!ezModel[v]) {
+                if (ezModel[v] == null) {
                     ezModel[v] = '';
                 }
                 txt += binder.content[i] + ezModel[v]
