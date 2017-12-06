@@ -162,7 +162,6 @@ window.onload = () => {
     }
 
     ez.addGS= (obj)=> {
-        console.log(obj);
         if (obj.variableName == undefined) console.warn('variableName is undefined, when adding getters and setters please specify the target by the variable name');
         else if (obj.variableName == null) console.warn('variableName is null, when adding getters and setters please specify the target by the variable name')
         else{
@@ -170,7 +169,6 @@ window.onload = () => {
                 get: obj.get,
                 set: obj.set
             }
-            console.log(ezGS);
         }
     }
 }
