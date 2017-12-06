@@ -1,25 +1,47 @@
 let identifiers = ['{{', '}}']
-let ezModel = {};
-let binders = [];
+let ez = {};
 
 window.onload = () => {
-
+    let ezGS = {}
+    let binders = [];
     let linker = {
         set: function (obj, vari, value) {
+            let tempVal = value;
 
-            if (value == obj[vari]) return false
+            if (ezGS[vari] != null && ezGS[vari].set != null) {
+                if (typeof ezGS[vari].set === 'function'){
+                    tempVal = ezGS[vari].set(value, obj[vari]);
+                    console.log(tempVal);
+                }
+                else console.warn('The Set of the variable (', vari, ') is not a function, Get & Set must be functions returning a value ...');
+            }
 
-            obj[vari] = value;
+            // if the old value equal the new value no need to change
+            if (tempVal == obj[vari]) return false
+            // Set the New Value
+            obj[vari] = tempVal;
+            // Get all the elements related to the 
             let bin = [];
             binders.forEach(binder => {
                 if (binder.variables.indexOf(vari) > -1) bin.push(binder)
             })
-
+            // Update each Element
             bin.forEach(b => {
                 updateBindings(b)
             })
             // Indicate success
             return true;
+        },
+
+        get: function (obj, vari) {
+
+            if (ezGS[vari] != null && ezGS[vari].get != null) {
+                if (typeof ezGS[vari].get === 'function'){
+                    return ezGS[vari].get(obj[vari]);
+                }
+                else console.warn('The Get of the variable (', vari, ') is not a function, Get & Set must be functions returning a value ...'); 
+            }
+            return obj[vari];
         }
     };
 
@@ -29,7 +51,7 @@ window.onload = () => {
         initEvents(binder)
     })
 
-    ezModel = new Proxy(ezModel, linker);
+    ez = new Proxy(ez, linker);
 
     function getAllBindings() {
 
@@ -85,23 +107,22 @@ window.onload = () => {
     function updateBindings(binder) {
         if (binder.element.nodeName == "INPUT" || binder.element.nodeName == "SELECT") {
             // Init the variable if doesn't exist ...
-            if (ezModel[binder.variables[0]] == null) {
-                ezModel[binder.variables[0]] = binder.element.value;
+            if (ez[binder.variables[0]] == null) {
+                ez[binder.variables[0]] = binder.element.value;
             }
             // Update the value of the element
-            binder.element.value = ezModel[binder.variables[0]]
+            binder.element.value = ez[binder.variables[0]]
         }
         else {
             let txt = '', b = '';
             // Reconstruct the textContent from original
             binder.variables.forEach((v, i) => {
-                if (ezModel[v] == null) {
-                    ezModel[v] = '';
-                }
+                let value = ez[v];
+                if (value == null || undefined) value = ''
                 b = binder.content[i];
                 if (b == null || b == undefined) b = '';
 
-                txt += b + ezModel[v]
+                txt += b + value
             })
             b = binder.content[binder.content.length - 1];
             if (b == null || b == undefined) b = '';
@@ -116,11 +137,11 @@ window.onload = () => {
     function initEvents(binder) {
         if (binder.element.nodeName == "INPUT") {
             binder.element.addEventListener('input', function (evt) {
-                ezModel[binder.variables[0]] = evt.target.value;
+                ez[binder.variables[0]] = evt.target.value;
             });
         } else if (binder.element.nodeName == "SELECT") {
             binder.element.addEventListener('change', function (evt) {
-                ezModel[binder.variables[0]] = evt.target.value;
+                ez[binder.variables[0]] = evt.target.value;
             });
         }
     }
@@ -137,6 +158,19 @@ window.onload = () => {
             })
 
             return vv
+        }
+    }
+
+    ez.addGS= (obj)=> {
+        console.log(obj);
+        if (obj.variableName == undefined) console.warn('variableName is undefined, when adding getters and setters please specify the target by the variable name');
+        else if (obj.variableName == null) console.warn('variableName is null, when adding getters and setters please specify the target by the variable name')
+        else{
+            ezGS[obj.variableName] = {
+                get: obj.get,
+                set: obj.set
+            }
+            console.log(ezGS);
         }
     }
 }

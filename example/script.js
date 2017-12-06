@@ -1,5 +1,5 @@
-ezModel.time = (new Date()).toString();
+ez.time = (new Date()).toString();
 
-setInterval(function () {
-    ezModel.time = (new Date()).toString();
-}, 1000);
+// setInterval(function () {
+//     ezModel.time = (new Date()).toString();
+// }, 1000);

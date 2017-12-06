@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="../ez_bind.js"></script>
+    <script src="test.js"></script>
+</head>
+
+<body>
+    <p ez-Model>
+        message: {{message}}
+    </p>
+    <p ez-Model>
+        eztrue: {{eztrue}}
+    </p>
+    <p ez-Model>
+        ezfalse: {{ezfalse}}
+    </p>
+    <p ez-Model>
+        ezundefine: {{ezundefine}}
+    </p>
+    <p ez-Model>
+        ezvalue: {{ezvalue}}
+    </p>
+    <p ez-Model>
+        eznull: {{eznull}}
+    </p>
+    <p ez-Model>
+        ezchanged: {{ezchanged}}
+    </p>
+    <p ez-Model>
+        notfunction: {{notfunction}}
+    </p>
+    <p ez-Model>
+        forwarder: {{forwarder}}
+    </p>
+    <button onclick="testSet()">Test Set</button>
+    <button onclick="testGet()">Test Get</button>
+</body>
+
+</html>
