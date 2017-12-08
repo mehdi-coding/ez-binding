@@ -12,17 +12,36 @@
 </head>
 
 <body>
-    <!-- <input type="text" value="initial" ez-Model="user.name">
-    <input type="text" value="initial" ez-Model="user.email">
-    <p ez-model>
-        message: {{message}}
+    <p ez-Model>
+        <b>The Time is: </b>{{time}}
     </p>
-    <p ez-model>
-        Name: {{user.name}} <br />
-        Email: <b>{{ user.email }}</b>
+    <label for="first">Name:</label>
+    <input type="text" ez-Model="user.name" id="first" value="">
+    <select name="select" ez-Model="user.name">
+        <option value="Mehdi">Mehdi</option>
+        <option value="Ez-Binding" selected>Ez-Binding</option>
+        <option value="Test Name">Test Name</option>
+    </select><br /><br />
+    
+    <label for="last">Company:</label>
+    <input type="text" ez-model="user.company" id="last" value="">
+    <input list="companies" ez-Model="user.company">
+    <datalist id="companies">
+        <option value="SONATRACH"></option>
+        <option value="Facebook"></option>
+        <option value="Google"></option>
+    </datalist><br /><br />
+  
+    <label for="last">Age:</label>
+    <input type="number" min="0" max="150" value="1" ez-Model="user.age">
+    0<input type="range" min="0" max="150" value="1" ez-Model="user.age">150
+    <br /> <br />
+   
+    <p ez-Model>
+        Mrs / Mr <b>{{ user.name }}</b> working at {{user.company}} is {{user.age}} years old
     </p>
+    {{message}}
 
-    <button onclick="test()">Test</button> -->
 </body>
 
 </html>

@@ -1,75 +1,83 @@
-let binders = [];
-let identifiers = ['{{', '}}'];
 let ez = {};
-let setFunctionname = 'SetFunction'
-let getFunctionname = 'GetFunction'
 
-let linker = {
-    set: function (obj, vari, newVal) {
-        let tempVal = newVal
 
-        if (obj[vari + setFunctionname] != null) {
-            if (typeof obj[vari + setFunctionname] === 'function') {
-                tempVal = obj[vari + setFunctionname](obj, vari, newVal)
-            } else console.warn('The Set of the variable (', vari, ') is not a function, Get & Set must be functions returning a value ...');
-        }
 
-        // if the old value equal the new value no need to change
-        if (tempVal == obj[vari]) return false
-        // Set the New Value
-        obj[vari] = tempVal;
-
-        // // Get all the elements related to the 
-        // let bin = [];
-        // binders.forEach(binder => {
-        //     if (binder.variables.indexOf(vari) > -1) bin.push(binder)
-        // })
-        // // Update each Element
-        // bin.forEach(b => {
-        //     updateBindings(b)
-        // })
-        // // Indicate success
-        // return true;
-    },
-    get: function (obj, vari) {
-        if (typeof obj[vari] === 'object' && obj[vari] !== null) {
-            return new Proxy(obj[vari], linker)
-        } else {
-            if (obj[vari + getFunctionname] != null) {
-                if (typeof obj[vari + getFunctionname] === 'function') {
-                    return obj[vari + getFunctionname](obj, vari)
-                } else console.warn('The Get of the variable (', vari, ') is not a function, Get & Set must be functions returning a value ...');
+(function () {
+    ez.addGS = (obj) => {
+        if (obj.variableName == undefined) console.warn('variableName is undefined, when adding getters and setters please specify the target by the variable name');
+        else if (obj.variableName == null) console.warn('variableName is null, when adding getters and setters please specify the target by the variable name')
+        else {
+            if (obj.set) {
+                let SvarPath = obj.variableName.split('.');
+                SvarPath[SvarPath.length - 1] = SvarPath[SvarPath.length - 1] + 'SetterFunction';
+                setVariableValue(SvarPath, obj.set)
             }
-
-            return obj[vari];
+    
+            if (obj.get) {
+                let GvarPath = obj.variableName.split('.');
+                GvarPath[GvarPath.length - 1] = GvarPath[GvarPath.length - 1] + 'GetterFunction';
+                setVariableValue(GvarPath, obj.get)
+            }
         }
     }
-};
+    
+    let binders = [];
+    let identifiers = ['{{', '}}'];
+    let linker = {
+        set: function (obj, vari, newVal) {
+            let tempVal = newVal
 
-window.onload = () => {
-    getAllBindings()
-    binders.forEach(binder => {
-        updateBindings(binder);
-        initEvents(binder)
-    })
+            if (obj[vari + 'SetterFunction'] != null) {
+                if (typeof obj[vari + 'SetterFunction'] === 'function') {
+                    tempVal = obj[vari + 'SetterFunction'](obj, vari, newVal)
+                } else console.warn('The Set of the variable (', vari, ') is not a function, Get & Set must be functions returning a value ...');
+            }
 
-    ez = new Proxy(ez, linker);
+            // if the old value equal the new value no need to change
+            if (tempVal == obj[vari]) return false
+            // Set the New Value
+            obj[vari] = tempVal;
 
-    // ez = new Proxy(ez, validator)
+            // Get all the elements related to the 
+            let bin = [];
+            binders.forEach(binder => {
+                binder.variables.forEach(v => {
+                    // console.log(v.join('.'));
+                    if (v.indexOf(vari) > -1) bin.push(binder)
+                })
+            })
+            // Update each Element
+            bin.forEach(b => {
+                updateBindings(b)
+            })
+            // Indicate success
+            return true;
+        },
+        get: function (obj, vari) {
+            if (typeof obj[vari] === 'object' && obj[vari] !== null) {
+                return new Proxy(obj[vari], linker)
+            } else {
+                if (obj[vari + 'GetterFunction'] != null) {
+                    if (typeof obj[vari + 'GetterFunction'] === 'function') {
+                        return obj[vari + 'GetterFunction'](obj, vari)
+                    } else console.warn('The Get of the variable (', vari, ') is not a function, Get & Set must be functions returning a value ...');
+                }
 
-
+                return obj[vari];
+            }
+        }
+    };
 
     function getAllBindings() {
         // Get all elements that have attribute ez-model
         let modElemts = Array.from(document.querySelectorAll('[ez-Model]'));
-        console.log(modElemts);
         // Go for each element
         modElemts.forEach((modElem) => {
             // If the nodes are input or select no need to check innerHTML, we use Values
             if (modElem.nodeName == "INPUT" || modElem.nodeName == "SELECT") {
                 let binder = {
                     element: modElem,
-                    variables: [[modElem.getAttribute('ez-Model')]],
+                    variables: [modElem.getAttribute('ez-Model').split('.')],
                     content: []
                 }
                 binders.push(binder);
@@ -111,121 +119,100 @@ window.onload = () => {
         })
     }
 
-}
-
-// add event listners
-function initEvents(binder) {
-    if (binder.element.nodeName == "INPUT") {
-        binder.element.addEventListener('input', function (evt) {
-            setVariableValue(binder.variables[0], evt.target.value);
-        });
-    } else if (binder.element.nodeName == "SELECT") {
-        binder.element.addEventListener('change', function (evt) {
-            setVariableValue(binder.variables[0], evt.target.value);
-        });
-    }
-}
-
-function updateBindings(binder) {
-    if (binder.element.nodeName == "INPUT" || binder.element.nodeName == "SELECT") {
-        // Init the variable if doesn't exist ...ez[binder.variables[0]]
-        let value = getVariableValue(binder.variables[0]);
-        if (value == null) {
-            setVariableValue(binder.variables[0], binder.element.value);
+    // add event listners
+    function initEvents(binder) {
+        if (binder.element.nodeName == "INPUT") {
+            binder.element.addEventListener('input', function (evt) {
+                setVariableValue(binder.variables[0], evt.target.value);
+            });
+        } else if (binder.element.nodeName == "SELECT") {
+            binder.element.addEventListener('change', function (evt) {
+                setVariableValue(binder.variables[0], evt.target.value);
+            });
         }
-        // Update the value of the element
-        binder.element.value = value
     }
-    else {
-        let txt = '', b = '';
-        // Reconstruct the textContent from original
-        binder.variables.forEach((v, i) => {
-            let value = getVariableValue(v);
-            if (value == null || undefined) value = ''
-            b = binder.content[i];
+
+    function updateBindings(binder) {
+        if (binder.element.nodeName == "INPUT" || binder.element.nodeName == "SELECT") {
+            // Init the variable if doesn't exist ...ez[binder.variables[0]]
+            let value = getVariableValue(binder.variables[0]);
+            if (value == null) {
+                setVariableValue(binder.variables[0], binder.element.value);
+                value = binder.element.value;
+            }
+            // Update the value of the element
+            binder.element.value = value
+        }
+        else {
+            let txt = '', b = '';
+            // Reconstruct the textContent from original
+            binder.variables.forEach((v, i) => {
+                let value = getVariableValue(v);
+                if (value == null || undefined) value = ''
+                b = binder.content[i];
+                if (b == null || b == undefined) b = '';
+
+                txt += b + value
+            })
+            b = binder.content[binder.content.length - 1];
             if (b == null || b == undefined) b = '';
 
-            txt += b + value
-        })
-        b = binder.content[binder.content.length - 1];
-        if (b == null || b == undefined) b = '';
-
-        txt += b;
-        // Update the innerHTML
-        binder.element.innerHTML = txt;
-    }
-}
-
-// Get the value of the oobject from the passed properties array
-function getVariableValue(varObjArray) {
-    let valueGetter = (accumulator, property, ind, arr) => {
-        if (accumulator[property] == null) {
-            if (ind == arr.length - 1) accumulator[property] = null
-            else accumulator[property] = {}
+            txt += b;
+            // Update the innerHTML
+            binder.element.innerHTML = txt;
         }
-        return accumulator[property]
     }
-    return varObjArray.reduce(valueGetter, ez)
-}
 
-// Set the value of the oobject from the passed properties array
-function setVariableValue(varObjArray, value) {
-    let valueGetter = (accumulator, property, ind, arr) => {
-        if (ind == arr.length - 1) accumulator[property] = value
-        if (accumulator[property] == null) {
-            accumulator[property] = {}
-        }
-        return accumulator[property]
-    }
-    return varObjArray.reduce(valueGetter, ez)
-}
-
-// Set the value of the oobject from the passed properties array
-function getObjFromArray(varObjArray) {
-    let valueGetter = (accumulator, property, ind, arr) => {
-        if (ind == arr.length - 1) {
-            return accumulator;
-        } else {
+    // Get the value of the oobject from the passed properties array
+    function getVariableValue(varObjArray) {
+        let valueGetter = (accumulator, property, ind, arr) => {
             if (accumulator[property] == null) {
                 if (ind == arr.length - 1) accumulator[property] = null
                 else accumulator[property] = {}
             }
             return accumulator[property]
         }
+        return varObjArray.reduce(valueGetter, ez)
     }
-    return varObjArray.reduce(valueGetter, ez)
-}
 
+    // Set the value of the oobject from the passed properties array
+    function setVariableValue(varObjArray, value) {
+        let valueGetter = (accumulator, property, ind, arr) => {
+            if (ind == arr.length - 1) accumulator[property] = value
+            if (accumulator[property] == null) {
+                accumulator[property] = {}
+            }
+            return accumulator[property]
+        }
+        return varObjArray.reduce(valueGetter, ez)
+    }
 
+    // Set the value of the oobject from the passed properties array
+    function getObjFromArray(varObjArray) {
+        let valueGetter = (accumulator, property, ind, arr) => {
+            if (ind == arr.length - 1) {
+                return accumulator;
+            } else {
+                if (accumulator[property] == null) {
+                    if (ind == arr.length - 1) accumulator[property] = null
+                    else accumulator[property] = {}
+                }
+                return accumulator[property]
+            }
+        }
+        return varObjArray.reduce(valueGetter, ez)
+    }
 
+    window.onload = () => {
+        getAllBindings()
+        binders.forEach(binder => {
+            updateBindings(binder);
+            initEvents(binder)
+        })
+    
+        ez = new Proxy(ez, linker);
+        
+            
+    }
+})
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//     ez.addGS= (obj)=> {
-//         if (obj.variableName == undefined) console.warn('variableName is undefined, when adding getters and setters please specify the target by the variable name');
-//         else if (obj.variableName == null) console.warn('variableName is null, when adding getters and setters please specify the target by the variable name')
-//         else{
-//             ezGS[obj.variableName] = {
-//                 get: obj.get,
-//                 set: obj.set
-//             }
-//         }
-//     }
-// }

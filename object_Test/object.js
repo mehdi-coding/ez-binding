@@ -1,17 +1,16 @@
-function test() {
-    // setVariableValue(binders[2].variables[1], "Blah Badi ...")
+ez.time = (new Date()).toString();
+setInterval(function () {
+    ez.time = (new Date()).toString();
+}, 1000);
 
-    // console.log(binders[2].variables[1]);
-
-    // oo = getVariableValue(binders[2].variables[1])
-    // console.log(oo);
-
-    // pp = getObjFromArray(binders[2].variables[1])
-    // console.log(pp);
-    binders.forEach(b => updateBindings(b))
-    ez.user.name = "Mehdi";
-    ez.user.email = "email@gmail.com"
-    binders.forEach(b => updateBindings(b))
-    
-    
+window.onload = () => {
+    ez.addGS({
+        variableName: "user.age",
+        set: (obj, prop, newValue) => {
+            if(newValue < 50) ez.message = "You too Youg";
+            else if (newValue > 100) ez.message = "You are too Old"
+            else ez.message = "You are welcome to register"
+        }
+    })
 }
+
