@@ -46,6 +46,7 @@ window.onload = () => {
     };
 
     binders = getAllBindings();
+    console.log(binders);
     binders.forEach(binder => {
         updateBindings(binder);
         initEvents(binder)
@@ -54,10 +55,10 @@ window.onload = () => {
     ez = new Proxy(ez, linker);
 
     function getAllBindings() {
-
+        // Get all elements that have attribute ez-model
         let modElemts = Array.from(document.querySelectorAll('[ez-Model]'))
         let bindings = [];
-
+        // Go for each element
         modElemts.forEach((modElem) => {
             let childs = modElem.childNodes;
             if (Array.from(childs).length == 0) {
