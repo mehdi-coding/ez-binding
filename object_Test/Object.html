@@ -9,6 +9,20 @@
     <!-- <script src="lo.js"></script> -->
     <script src="modified.js"></script>
     <script src="object.js"></script>
+    <style>
+        .error {
+            background-color: coral;
+            color: white;
+            font-size: 25px;
+            padding: 5px
+        }
+        .good {
+            background-color: rgb(66, 228, 74);
+            color: white;
+            font-size: 25px;
+            padding: 5px
+        }
+    </style>
 </head>
 
 <body>
@@ -21,8 +35,10 @@
         <option value="Mehdi">Mehdi</option>
         <option value="Ez-Binding" selected>Ez-Binding</option>
         <option value="Test Name">Test Name</option>
-    </select><br /><br />
-    
+    </select>
+    <br />
+    <br />
+
     <label for="last">Company:</label>
     <input type="text" ez-model="user.company" id="last" value="">
     <input list="companies" ez-Model="user.company">
@@ -30,18 +46,27 @@
         <option value="SONATRACH"></option>
         <option value="Facebook"></option>
         <option value="Google"></option>
-    </datalist><br /><br />
-  
-    <label for="last">Age:</label>
-    <input type="number" min="0" max="150" value="1" ez-Model="user.age">
-    0<input type="range" min="0" max="150" value="1" ez-Model="user.age">150
-    <br /> <br />
-   
-    <p ez-Model>
-        Mrs / Mr <b>{{ user.name }}</b> working at {{user.company}} is {{user.age}} years old
-    </p>
-    {{message}}
+    </datalist>
+    <br />
+    <br />
 
+    <label for="last">Age:</label>
+    <input type="number" min="0" max="150" value="1" ez-Model="user.age"> 0
+    <input type="range" min="0" max="150" value="1" ez-Model="user.age">150
+    <br />
+    <br />
+
+    <p ez-Model>
+        Mrs / Mr
+        <b>{{ user.name }}</b> working at {{user.company}} is {{user.age}} years old
+    </p>
+
+    <div ez-model>{{message}}</div>
+
+
+    <button onclick="add()" id="addBtn">Add</button>
+
+    
 </body>
 
 </html>

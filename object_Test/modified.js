@@ -1,43 +1,52 @@
+
 let ez = {};
+ez.addGS = (obj) => {
+    if (obj.variableName == undefined) console.warn('variableName is undefined, when adding getters and setters please specify the target by the variable name');
+    else if (obj.variableName == null) console.warn('variableName is null, when adding getters and setters please specify the target by the variable name')
+    else {
+        if (obj.set) {
+            let SvarPath = obj.variableName.split('.');
+            SvarPath[SvarPath.length - 1] = SvarPath[SvarPath.length - 1] + 'SetterFunction';
+            setVariableValue(SvarPath, obj.set)
+        }
 
-
-
-(function () {
-    ez.addGS = (obj) => {
-        if (obj.variableName == undefined) console.warn('variableName is undefined, when adding getters and setters please specify the target by the variable name');
-        else if (obj.variableName == null) console.warn('variableName is null, when adding getters and setters please specify the target by the variable name')
-        else {
-            if (obj.set) {
-                let SvarPath = obj.variableName.split('.');
-                SvarPath[SvarPath.length - 1] = SvarPath[SvarPath.length - 1] + 'SetterFunction';
-                setVariableValue(SvarPath, obj.set)
-            }
-    
-            if (obj.get) {
-                let GvarPath = obj.variableName.split('.');
-                GvarPath[GvarPath.length - 1] = GvarPath[GvarPath.length - 1] + 'GetterFunction';
-                setVariableValue(GvarPath, obj.get)
-            }
+        if (obj.get) {
+            let GvarPath = obj.variableName.split('.');
+            GvarPath[GvarPath.length - 1] = GvarPath[GvarPath.length - 1] + 'GetterFunction';
+            setVariableValue(GvarPath, obj.get)
         }
     }
-    
+
+    function setVariableValue(varObjArray, value) {
+        let valueGetter = (accumulator, property, ind, arr) => {
+            if (ind == arr.length - 1) accumulator[property] = value
+            if (accumulator[property] == null) {
+                accumulator[property] = {}
+            }
+            return accumulator[property]
+        }
+        return varObjArray.reduce(valueGetter, ez)
+    }
+}
+
+
+
+window.onload = () => {
     let binders = [];
     let identifiers = ['{{', '}}'];
     let linker = {
         set: function (obj, vari, newVal) {
             let tempVal = newVal
-
+            // If availabe and is a function, excute the variable Setter
             if (obj[vari + 'SetterFunction'] != null) {
                 if (typeof obj[vari + 'SetterFunction'] === 'function') {
                     tempVal = obj[vari + 'SetterFunction'](obj, vari, newVal)
                 } else console.warn('The Set of the variable (', vari, ') is not a function, Get & Set must be functions returning a value ...');
             }
-
             // if the old value equal the new value no need to change
             if (tempVal == obj[vari]) return false
             // Set the New Value
             obj[vari] = tempVal;
-
             // Get all the elements related to the 
             let bin = [];
             binders.forEach(binder => {
@@ -54,20 +63,22 @@ let ez = {};
             return true;
         },
         get: function (obj, vari) {
+            // This trap is for nested properties proxy
             if (typeof obj[vari] === 'object' && obj[vari] !== null) {
                 return new Proxy(obj[vari], linker)
             } else {
+                // If availabe and is a function, excute the variable Getter
                 if (obj[vari + 'GetterFunction'] != null) {
                     if (typeof obj[vari + 'GetterFunction'] === 'function') {
                         return obj[vari + 'GetterFunction'](obj, vari)
                     } else console.warn('The Get of the variable (', vari, ') is not a function, Get & Set must be functions returning a value ...');
                 }
-
+                // if no getter just send back the value
                 return obj[vari];
             }
         }
     };
-
+    // get all elements that have ez-model attribute
     function getAllBindings() {
         // Get all elements that have attribute ez-model
         let modElemts = Array.from(document.querySelectorAll('[ez-Model]'));
@@ -119,7 +130,7 @@ let ez = {};
         })
     }
 
-    // add event listners
+    // add event listners for inputs and select
     function initEvents(binder) {
         if (binder.element.nodeName == "INPUT") {
             binder.element.addEventListener('input', function (evt) {
@@ -132,6 +143,7 @@ let ez = {};
         }
     }
 
+    // Update the bindings with the given value
     function updateBindings(binder) {
         if (binder.element.nodeName == "INPUT" || binder.element.nodeName == "SELECT") {
             // Init the variable if doesn't exist ...ez[binder.variables[0]]
@@ -175,19 +187,7 @@ let ez = {};
         return varObjArray.reduce(valueGetter, ez)
     }
 
-    // Set the value of the oobject from the passed properties array
-    function setVariableValue(varObjArray, value) {
-        let valueGetter = (accumulator, property, ind, arr) => {
-            if (ind == arr.length - 1) accumulator[property] = value
-            if (accumulator[property] == null) {
-                accumulator[property] = {}
-            }
-            return accumulator[property]
-        }
-        return varObjArray.reduce(valueGetter, ez)
-    }
-
-    // Set the value of the oobject from the passed properties array
+    // Get the object from the passed properties array
     function getObjFromArray(varObjArray) {
         let valueGetter = (accumulator, property, ind, arr) => {
             if (ind == arr.length - 1) {
@@ -202,17 +202,24 @@ let ez = {};
         }
         return varObjArray.reduce(valueGetter, ez)
     }
-
-    window.onload = () => {
-        getAllBindings()
-        binders.forEach(binder => {
-            updateBindings(binder);
-            initEvents(binder)
-        })
-    
-        ez = new Proxy(ez, linker);
-        
-            
+    // Set the value of the oobject from the passed properties array
+    function setVariableValue(varObjArray, value) {
+        let valueGetter = (accumulator, property, ind, arr) => {
+            if (ind == arr.length - 1) accumulator[property] = value
+            if (accumulator[property] == null) {
+                accumulator[property] = {}
+            }
+            return accumulator[property]
+        }
+        return varObjArray.reduce(valueGetter, ez)
     }
-})
-
+    // on window load get all elements that have ez-model attribute
+    getAllBindings()
+    // For each binding update the bindings and add events listners for inputs and selects
+    binders.forEach(binder => {
+        updateBindings(binder);
+        initEvents(binder)
+    })
+    // Hook the proxy
+    ez = new Proxy(ez, linker);
+}
